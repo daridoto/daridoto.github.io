@@ -1,0 +1,90 @@
+---
+interface Props {
+	/** Dónde se ha usado; aparece al pasar el ratón o al tocar la etiqueta. */
+	context?: string;
+}
+
+const { context } = Astro.props;
+---
+
+{
+	context ? (
+		<span class="chip mono" tabindex="0">
+			<slot />
+			<span class="tip" role="tooltip">
+				{context}
+			</span>
+		</span>
+	) : (
+		<span class="chip mono">
+			<slot />
+		</span>
+	)
+}
+
+<script>
+	// Si el tooltip no cabe a la derecha de la pantalla, se desplaza hacia dentro.
+	function fit(chip: HTMLElement) {
+		const tip = chip.querySelector<HTMLElement>('.tip');
+		if (!tip) return;
+		tip.style.left = '0px';
+		const overflow = tip.getBoundingClientRect().right - (window.innerWidth - 16);
+		if (overflow > 0) tip.style.left = `${-overflow}px`;
+	}
+
+	document.addEventListener('astro:page-load', () => {
+		document.querySelectorAll<HTMLElement>('.chip[tabindex]').forEach((chip) => {
+			chip.addEventListener('pointerenter', () => fit(chip));
+			chip.addEventListener('focus', () => fit(chip));
+		});
+	});
+</script>
+
+<style>
+	.chip {
+		position: relative;
+		display: inline-block;
+		margin: 0 2px;
+		padding: 0 7px;
+		border-radius: 5px;
+		background: var(--chip);
+		color: var(--text);
+		font-size: 0.8em;
+		line-height: 1.7;
+		white-space: nowrap;
+	}
+
+	.chip[tabindex] {
+		cursor: default;
+	}
+
+	.tip {
+		position: absolute;
+		left: 0;
+		top: calc(100% + 6px);
+		z-index: 5;
+		padding: 4px 8px;
+		border-radius: 6px;
+		background: var(--text);
+		color: var(--bg);
+		font-size: 11px;
+		line-height: 1.5;
+		/* Sin esto, el tooltip oculto ensancha la página en el móvil. */
+		width: max-content;
+		max-width: min(240px, 60vw);
+		white-space: normal;
+		visibility: hidden;
+		opacity: 0;
+		transform: translateY(-4px);
+		pointer-events: none;
+		transition: opacity 150ms ease, transform 150ms var(--ease-out), visibility 150ms;
+	}
+
+	.chip:hover .tip,
+	.chip:focus-visible .tip,
+	.chip:focus .tip {
+		visibility: visible;
+		opacity: 1;
+		transform: none;
+	}
+</style>

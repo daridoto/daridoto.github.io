@@ -1,0 +1,366 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import Tecnologias from '../components/Tecnologias.astro';
+import Capitulo from '../components/Capitulo.astro';
+import LogoTestify from '../components/LogoTestify.astro';
+import LogoCloseUp from '../components/LogoCloseUp.astro';
+import LogoCountercheck from '../components/LogoCountercheck.astro';
+
+const proyectos = (await getCollection('proyectos')).sort((a, b) => a.data.orden - b.data.orden);
+const destacado = proyectos.find((p) => p.data.destacado);
+const otros = proyectos.filter((p) => !p.data.destacado);
+
+// Tras la marca, el título se lee como descripción: "Countercheck — sistema de…".
+// Las siglas (SCADA, API…) se dejan como están.
+const minuscula = (t: string) => (/^[A-Z]{2}/.test(t) ? t : t.charAt(0).toLowerCase() + t.slice(1));
+---
+
+<Base title="Darío Ceballos · Desarrollador full stack" home>
+	<div class="wrap page">
+		<div class="hero">
+			<h1 class="name" data-hero-name transition:name="nombre">Dar<span class="i-tilde">í</span>o Ceballos</h1>
+			<p class="intro strong reveal" style="--i: 1">
+				Desarrollador full stack, con foco en backend.
+			</p>
+			<!-- Presentación: qué sabe hacer, cómo trabaja (en el idioma de un equipo de banca) y qué
+			     busca. Los casos concretos van en Experiencia, que demuestra cada afirmación. -->
+			<p class="about reveal" style="--i: 2">
+				Técnico superior en DAM, especializado en desarrollo backend con Java (Spring Boot) y Python:
+				APIs REST, bases de datos y despliegue con Docker en servidores Linux. Me adapto rápido a
+				entornos nuevos y cuido que el código esté probado y que otros puedan mantenerlo. Me apasionan
+				las finanzas y busco incorporarme al sector bancario.
+			</p>
+			<p class="status reveal" style="--i: 3">
+				<span class="dot" aria-hidden="true"></span>
+				<span class="strong">Buscando nuevo puesto</span>
+				<span class="muted">· Madrid</span>
+			</p>
+		</div>
+
+		<div class="sections">
+			<Capitulo titulo="Proyectos" />
+
+			{
+				destacado && (
+					<Section label="Proyecto destacado" id="proyectos">
+						<div class="con-logo">
+							<div>
+								<h3 class="title strong">
+									{destacado.data.marca ? (
+										<>
+											{destacado.data.marca} <span class="muted">— {minuscula(destacado.data.titulo)}</span>
+										</>
+									) : (
+										destacado.data.titulo
+									)}
+								</h3>
+								<p class="gap-1">{destacado.data.resumen}</p>
+								<p class="meta mono gap-1">{destacado.data.stack.join(' · ')}</p>
+								<p class="gap-2">
+									<a href={`/proyectos/${destacado.id}`}>Ver el caso completo →</a>
+								</p>
+							</div>
+							<div class="logo-proyecto">
+								<LogoCountercheck palabra={false} />
+							</div>
+						</div>
+					</Section>
+				)
+			}
+
+			<Section label="Experiencia" id="experiencia">
+				<h3 class="title strong"><span class="muted">(Prácticas)</span> Desarrollador backend e IA generativa · ISYFU</h3>
+				<p class="meta mono gap-1">feb.–jun. 2026</p>
+				<p class="gap-1">
+					Startup de formación online para opositores, con prioridades cambiantes y plazos ajustados.
+				</p>
+
+				<div class="logros">
+					<div class="con-logo">
+						<div>
+							<h4 class="logro strong">
+								Testify <span class="muted">— generación y validación de preguntas de examen</span>
+							</h4>
+							<p class="gap-1">
+								Las preguntas tipo test las escribían policías, a 1 € cada una y tras un proceso
+								manual. Diseñé pipelines con LangChain y LangGraph que las generan y validan para
+								todos los temas de Policía Nacional, y después para Guardia Civil: ahora cuestan
+								0,02 € y salen en segundos.
+							</p>
+							<p class="gap-1">
+								Incluye una web de revisión donde se aprueba o rechaza cada pregunta, y un backend
+								desplegado y mantenido en un VPS con Ubuntu Server, Docker y Nginx.
+							</p>
+							<p class="meta mono gap-1">Python · FastAPI · LangChain · LangGraph · Supabase · Docker · Nginx</p>
+						</div>
+						<div class="logo-proyecto">
+							<LogoTestify />
+						</div>
+					</div>
+
+					<div class="con-logo">
+						<div>
+							<h4 class="logro strong">
+								CloseUp <span class="muted">— auditoría de llamadas comerciales</span>
+							</h4>
+							<p class="gap-1">
+								Recibe la grabación de una llamada en audio, vídeo o un enlace de Google Drive, la
+								transcribe, la resume y genera un informe en PDF con feedback para el comercial.
+							</p>
+							<p class="meta mono gap-1">Python · FastAPI · Whisper · OpenAI · ffmpeg</p>
+						</div>
+						<div class="logo-proyecto">
+							<LogoCloseUp />
+						</div>
+					</div>
+
+					<div>
+						<h4 class="logro strong">Finanzas</h4>
+						<p class="gap-1">
+							El CEO me delegó parte de las finanzas de la empresa: conciliaciones bancarias y
+							emisión de facturas a final de mes.
+						</p>
+					</div>
+				</div>
+			</Section>
+
+			<Section label="Otros proyectos">
+				{
+					otros.length > 0 ? (
+						<ul class="list">
+							{otros.map((p) => (
+								<li>
+									<a href={p.data.pagina ? `/proyectos/${p.id}` : p.data.repo}>{p.data.marca ?? p.data.titulo}</a>
+									{p.data.marca && <span class="muted"> — {minuscula(p.data.titulo)}</span>}
+									<p class="gap-1">{p.data.resumen}</p>
+									<p class="meta mono gap-1">{p.data.stack.join(' · ')}</p>
+								</li>
+							))}
+						</ul>
+					) : (
+						<p class="pending">Por completar.</p>
+					)
+				}
+			</Section>
+
+			<Capitulo titulo="Stack" id="stack" />
+
+			<!-- Resumen de lo que ya aparece repartido por los proyectos: se consulta, no convence. -->
+			<Section label="Conocimientos" id="conocimientos">
+				<div class="ancho-margen">
+					<Tecnologias />
+				</div>
+			</Section>
+
+			<Section label="Formación">
+				<div class="entry">
+					<span class="when mono">2024–2026</span>
+					<span>
+						<span class="strong">Desarrollo de Aplicaciones Multiplataforma</span>, ciclo formativo de grado
+						superior · UpgradeHub
+					</span>
+				</div>
+				<div class="entry gap-1">
+					<span class="when mono">idiomas</span>
+					<span>Español nativo · Inglés B1</span>
+				</div>
+			</Section>
+		</div>
+	</div>
+</Base>
+
+<style>
+	/* La portada va centrada a todo el ancho; las secciones de abajo, con etiqueta al margen. */
+	.hero {
+		text-align: center;
+	}
+
+	.page {
+		padding-top: var(--s-6);
+	}
+
+	.sections {
+		display: grid;
+		gap: var(--s-6);
+		margin-top: var(--s-7);
+	}
+
+	/* Un capítulo nuevo separa más que una sección: 96 por encima en lugar de 64. */
+	.sections > :global(.capitulo:not(:first-child)) {
+		margin-top: var(--s-5);
+	}
+
+	/* El nombre se "rotula" de izquierda a derecha, como un trazo de rotulador. */
+	.name {
+		font-family: var(--font-logo);
+		font-weight: 400;
+		font-size: clamp(56px, 11vw, 76px);
+		line-height: 1;
+		color: var(--text);
+		/* Hueco arriba para que el recorte de la animación no corte la tilde; simétrico
+		   a los lados para que el centrado sea real. */
+		padding: 0.12em 0.12em 0.08em;
+		margin: -0.12em auto 0;
+		width: fit-content;
+		animation: draw 900ms var(--ease-out) 100ms backwards;
+	}
+
+	@keyframes draw {
+		from {
+			clip-path: inset(0 100% 0 0);
+		}
+		to {
+			clip-path: inset(0 0 0 0);
+		}
+	}
+
+	.reveal {
+		animation: rise 600ms var(--ease-out) backwards;
+		animation-delay: calc(500ms + var(--i) * 90ms);
+	}
+
+	@keyframes rise {
+		from {
+			opacity: 0;
+			transform: translateY(6px);
+		}
+	}
+
+	.intro {
+		margin-top: var(--s-2);
+	}
+
+	/* Presentación a medida de lectura, centrada bajo el rol. Termina con el interés por la
+	   banca, que la experiencia confirma más abajo. */
+	.about {
+		max-width: 64ch;
+		margin: var(--s-2) auto 0;
+	}
+
+	.logros {
+		display: grid;
+		gap: var(--s-3);
+		margin-top: var(--s-3);
+	}
+
+	/* Marca fuerte y descripción en gris: el nombre da carácter y la descripción, contexto. */
+	.logro {
+		font-size: 16px;
+		font-weight: 500;
+		line-height: 1.6;
+	}
+
+	.title .muted,
+	.logro .muted {
+		font-weight: 400;
+	}
+
+	/* El emblema sale de la columna de texto y ocupa el margen derecho, alineado con el
+	   título; el texto conserva su medida de lectura. */
+	.con-logo {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) var(--aside);
+		gap: var(--gutter);
+		align-items: start;
+		margin-right: calc(-1 * (var(--aside) + var(--gutter)));
+	}
+
+	/* El logo vive en el margen y no cuenta para la altura del bloque: si es más alto que
+	   el texto, no empuja hacia abajo el logro siguiente. */
+	.logo-proyecto {
+		height: 0;
+	}
+
+	@media (max-width: 640px) {
+		.con-logo {
+			grid-template-columns: minmax(0, 1fr) 72px;
+			gap: var(--s-2);
+			margin-right: 0;
+		}
+
+		.logo-proyecto {
+			height: auto;
+		}
+	}
+
+	/* Ocupa el texto y el margen derecho: así cada fila de conocimientos cabe en una línea. */
+	.ancho-margen {
+		margin-right: calc(-1 * (var(--aside) + var(--gutter)));
+	}
+
+	@media (max-width: 640px) {
+		.ancho-margen {
+			margin-right: 0;
+		}
+	}
+
+	.status {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: var(--s-1);
+		margin-top: var(--s-3);
+		font-size: 14px;
+	}
+
+	.dot {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: var(--accent);
+	}
+
+	.sep,
+	.muted {
+		color: var(--muted);
+	}
+
+	.title {
+		font-size: 17px;
+		font-weight: 500;
+		line-height: 1.5;
+	}
+
+	.meta {
+		font-size: 12px;
+		color: var(--muted);
+	}
+
+	.gap-1 {
+		margin-top: var(--s-1);
+	}
+
+	.gap-2 {
+		margin-top: var(--s-2);
+	}
+
+	.list {
+		padding: 0;
+		list-style: none;
+		display: grid;
+		gap: var(--s-1);
+	}
+
+	.entry {
+		display: flex;
+		gap: var(--s-2);
+	}
+
+	.when {
+		flex: none;
+		min-width: 96px;
+		padding-top: 3px;
+		font-size: 12px;
+		color: var(--muted);
+	}
+
+
+	/* Huecos visibles a propósito mientras falta contenido. */
+	.pending {
+		color: var(--muted);
+		font-style: italic;
+	}
+
+</style>

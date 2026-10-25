@@ -1,0 +1,98 @@
+---
+import { execSync } from 'node:child_process';
+
+// Registro de build: se calcula al compilar la web.
+function git(command: string) {
+	try {
+		return execSync(command, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+	} catch {
+		return '';
+	}
+}
+
+const commit = git('git log -1 --format=%h -- .');
+const fecha = new Intl.DateTimeFormat('es-ES', {
+	day: 'numeric',
+	month: 'short',
+	year: 'numeric',
+}).format(new Date());
+---
+
+<footer class="footer" id="contacto">
+	<!-- Contacto al pie: quien llega hasta aquí ya está interesado. El email va primero. -->
+	<div class="wrap contacto">
+		<h2 class="label mono">Contacto</h2>
+		<p class="links">
+			<a href="mailto:dario.lab9@gmail.com">dario.lab9@gmail.com</a>
+			<span class="sep">·</span>
+			<a href="https://www.linkedin.com/in/dariosc-dev">LinkedIn</a>
+			<span class="sep">·</span>
+			<a href="https://github.com/daridoto">GitHub</a>
+			<span class="sep">·</span>
+			<a href="/cv-dario-ceballos.pdf" download>CV en PDF</a>
+		</p>
+	</div>
+	<div class="wrap row mono">
+		<span>build · {fecha}</span>
+		<span>{commit ? <>desplegado desde <span class="ref">main@{commit}</span></> : 'versión local, sin commit'}</span>
+	</div>
+</footer>
+
+<style>
+	.footer {
+		margin-top: var(--s-7);
+	}
+
+	/* Misma rejilla que las secciones: etiqueta al margen y enlaces en la columna de texto. */
+	.contacto {
+		display: grid;
+		grid-template-columns: var(--label) minmax(0, 1fr);
+		gap: 0 var(--gutter);
+		padding-bottom: var(--s-5);
+	}
+
+	.label {
+		font-size: 12px;
+		font-weight: 400;
+		line-height: 1.7;
+		color: var(--muted);
+		padding-top: 3px;
+	}
+
+	.links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--s-1);
+	}
+
+	.sep {
+		color: var(--muted);
+	}
+
+	@media (max-width: 640px) {
+		.contacto {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.label {
+			padding: 0;
+			margin-bottom: var(--s-2);
+		}
+	}
+
+	.row {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: var(--s-1) var(--s-3);
+		padding-top: var(--s-2);
+		padding-bottom: var(--s-5);
+		border-top: 1px solid var(--line);
+		font-size: 12px;
+		color: var(--muted);
+	}
+
+	.ref {
+		color: var(--accent);
+	}
+</style>

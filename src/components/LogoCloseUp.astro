@@ -1,0 +1,139 @@
+---
+// Emblema de CloseUp: un planeta que se deshace en ondas (la llamada) con el anillo de
+// Saturno (la cercanía), sobre la palabra. Paleta propia sacada de una foto de Saturno, en
+// bandas planas.
+interface Props {
+	// 'auto' sigue al tema de la web; 'claro' y 'oscuro' fijan el fondo para el que se pinta.
+	fondo?: 'auto' | 'claro' | 'oscuro';
+}
+
+const { fondo = 'auto' } = Astro.props;
+
+const cx = 100;
+const cy = 100;
+const r = 56;
+const alto = (x: number) => Math.sqrt(Math.max(r * r - (x - cx) ** 2, 0));
+
+// Media esfera iluminada: el arco izquierdo de la esfera y, como borde derecho, media
+// elipse de la misma altura. En los polos las dos curvas son horizontales, así que se unen
+// sin esquina en lugar de acabar en un corte recto.
+const bulto = 10;
+const cara = `M${cx} ${cy - r} A${r} ${r} 0 0 0 ${cx} ${cy + r} A${bulto} ${r} 0 0 0 ${cx} ${cy - r} Z`;
+
+// Lentes que se desprenden de la media esfera como un fluido: la primera se solapa con ella
+// y los huecos crecen mientras las lentes adelgazan. Cada una mide de alto exactamente lo que
+// la esfera en su centro, así el contorno sigue siendo un círculo.
+const anchos = [12, 9, 6.5, 4.5, 2.8];
+const huecos = [-1.5, 1.2, 2.6, 3.8, 4.6];
+const lentes: { x: number; rx: number; ry: number }[] = [];
+let izquierda = cx + bulto;
+anchos.forEach((ancho, i) => {
+	izquierda += huecos[i];
+	const x = izquierda + ancho / 2;
+	lentes.push({ x, rx: ancho / 2, ry: alto(x) });
+	izquierda += ancho;
+});
+
+// Anillo inclinado: la mitad de atrás se pinta antes que el planeta y la de delante después.
+const anillo = { rx: 94, ry: 19, giro: -16 };
+const atras = `M${-anillo.rx} 0 A${anillo.rx} ${anillo.ry} 0 0 1 ${anillo.rx} 0`;
+const delante = `M${-anillo.rx} 0 A${anillo.rx} ${anillo.ry} 0 0 0 ${anillo.rx} 0`;
+const giro = `translate(${cx} ${cy}) rotate(${anillo.giro})`;
+---
+
+<svg class:list={['emblema', fondo]} viewBox="0 20 200 196" role="img" aria-label="Logo de CloseUp">
+	<g transform={giro}>
+		<path class="anillo" d={atras} />
+	</g>
+	<path class="cara" d={cara} />
+	{lentes.map((l, i) => <ellipse class={`onda onda-${i}`} cx={l.x} cy={cy} rx={l.rx} ry={l.ry} />)}
+	<g transform={giro}>
+		<!-- Corte del color del fondo bajo el tramo delantero: separa anillo y planeta. -->
+		<path class="corte" d={delante} />
+		<path class="anillo" d={delante} />
+	</g>
+	<text class="palabra" x="12" y="208" textLength="176" lengthAdjust="spacingAndGlyphs">CLOSEUP</text>
+</svg>
+
+<style>
+	/* Tonos de la foto de Saturno, de la cara iluminada a la sombra. */
+	.emblema {
+		--s-luz: #eedfae;
+		--s-1: #e2cc8c;
+		--s-2: #d3b676;
+		--s-3: #bf9d5f;
+		--s-4: #a7854c;
+		--s-5: #8d6e3d;
+		--s-anillo: #9c8a6a;
+		--fondo: #fafaf8;
+		--tinta: #1c1c1a;
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+
+	/* Versión para fondo oscuro: la palabra en claro y el anillo un punto más luminoso. */
+	.emblema.oscuro {
+		--fondo: #0b0b0b;
+		--tinta: #ededea;
+		--s-anillo: #b8a582;
+	}
+
+	:global(:root[data-theme='dark']) .emblema.auto {
+		--fondo: #0b0b0b;
+		--tinta: #ededea;
+		--s-anillo: #b8a582;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		:global(:root:not([data-theme])) .emblema.auto {
+			--fondo: #0b0b0b;
+			--tinta: #ededea;
+			--s-anillo: #b8a582;
+		}
+	}
+
+	.anillo {
+		fill: none;
+		stroke: var(--s-anillo);
+		stroke-width: 5;
+		stroke-linecap: round;
+	}
+
+	.corte {
+		fill: none;
+		stroke: var(--fondo);
+		stroke-width: 10;
+	}
+
+	.cara {
+		fill: var(--s-luz);
+	}
+
+	.onda-0 {
+		fill: var(--s-1);
+	}
+
+	.onda-1 {
+		fill: var(--s-2);
+	}
+
+	.onda-2 {
+		fill: var(--s-3);
+	}
+
+	.onda-3 {
+		fill: var(--s-4);
+	}
+
+	.onda-4 {
+		fill: var(--s-5);
+	}
+
+	.palabra {
+		fill: var(--tinta);
+		font-family: var(--font-sans);
+		font-weight: 800;
+		font-size: 34px;
+	}
+</style>

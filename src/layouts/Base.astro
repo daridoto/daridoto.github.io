@@ -1,0 +1,87 @@
+---
+import { Font } from 'astro:assets';
+import { ClientRouter } from 'astro:transitions';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+interface Props {
+	title: string;
+	description?: string;
+	/** En la portada el nombre ya es el título: la cabecera lo muestra solo al hacer scroll. */
+	home?: boolean;
+}
+
+const {
+	title,
+	description = 'Darío Ceballos, desarrollador full stack con foco en backend.',
+	home = false,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="description" content={description} />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<title>{title}</title>
+		<Font cssVariable="--font-sans" preload />
+		<Font cssVariable="--font-mono" />
+		<Font cssVariable="--font-logo" preload />
+		<script is:inline>
+			// Se ejecuta antes de pintar para que no parpadee el tema equivocado.
+			(function () {
+				const apply = () => {
+					let theme;
+					try {
+						theme = localStorage.getItem('theme');
+					} catch {}
+					if (theme !== 'light' && theme !== 'dark') {
+						theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+					}
+					document.documentElement.dataset.theme = theme;
+					// Marca que hay JavaScript: sin él, las secciones se muestran sin animar.
+					document.documentElement.classList.add('js');
+				};
+				apply();
+				document.addEventListener('astro:after-swap', apply);
+			})();
+		</script>
+		<ClientRouter />
+	</head>
+	<body>
+		<Header home={home} />
+		<main>
+			<slot />
+		</main>
+		<Footer />
+		<script>
+			// Cada sección aparece al entrar en pantalla, con el mismo movimiento que la portada.
+			// Se muestra toda sección cuya parte de arriba ya ha entrado en pantalla; así, si se
+			// salta de golpe (un enlace al pie), las de encima tampoco se quedan ocultas.
+			function revelar() {
+				let pendientes = [...document.querySelectorAll('.aparece')];
+				const comprobar = () => {
+					const limite = window.innerHeight * 0.92;
+					pendientes = pendientes.filter((el) => {
+						if (el.getBoundingClientRect().top > limite) return true;
+						el.classList.add('visto');
+						return false;
+					});
+					if (pendientes.length === 0) window.removeEventListener('scroll', comprobar);
+				};
+				comprobar();
+				window.addEventListener('scroll', comprobar, { passive: true });
+				document.addEventListener(
+					'astro:before-swap',
+					() => window.removeEventListener('scroll', comprobar),
+					{ once: true },
+				);
+			}
+
+			document.addEventListener('astro:page-load', revelar);
+		</script>
+	</body>
+</html>

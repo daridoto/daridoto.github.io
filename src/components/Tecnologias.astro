@@ -1,0 +1,178 @@
+---
+// El orden hace el énfasis: lo que pide la oferta va primero en cada fila.
+// Logos de Simple Icons (CC0) en public/logos; sin logo cuando no existe.
+type Tec = { nombre: string; logo?: string; hex?: string };
+// Una línea por lenguaje cuando el grupo lo pide (frameworks): la de Java primero.
+type Linea = { tecs: Tec[] };
+
+const grupos: { tipo: string; tecs?: Tec[]; lineas?: Linea[] }[] = [
+	{
+		tipo: 'Lenguajes',
+		tecs: [
+			{ nombre: 'Java', logo: 'openjdk', hex: '000000' },
+			{ nombre: 'Python', logo: 'python', hex: '3776AB' },
+			{ nombre: 'SQL' },
+		],
+	},
+	{
+		tipo: 'Frameworks',
+		lineas: [
+			{
+				tecs: [
+					{ nombre: 'Spring Boot', logo: 'springboot', hex: '6DB33F' },
+					{ nombre: 'JUnit 5', logo: 'junit5', hex: '25A162' },
+					{ nombre: 'Eclipse RCP', logo: 'eclipseide', hex: '2C2255' },
+				],
+			},
+			{
+				tecs: [
+					{ nombre: 'FastAPI', logo: 'fastapi', hex: '009688' },
+					{ nombre: 'LangChain', logo: 'langchain', hex: '1C3C3C' },
+					{ nombre: 'LangGraph', logo: 'langgraph', hex: '7FC8FF' },
+					{ nombre: 'Streamlit', logo: 'streamlit', hex: 'FF4B4B' },
+				],
+			},
+		],
+	},
+	{
+		tipo: 'Bases de datos',
+		tecs: [
+			{ nombre: 'MySQL', logo: 'mysql', hex: '4479A1' },
+			{ nombre: 'PostgreSQL (Supabase)', logo: 'postgresql', hex: '4169E1' },
+			{ nombre: 'SQLite', logo: 'sqlite', hex: '003B57' },
+		],
+	},
+	{
+		tipo: 'Herramientas',
+		tecs: [
+			{ nombre: 'Git', logo: 'git', hex: 'F05032' },
+			{ nombre: 'Maven', logo: 'apachemaven', hex: 'C71A36' },
+			{ nombre: 'Jenkins', logo: 'jenkins', hex: 'D24939' },
+			{ nombre: 'Docker', logo: 'docker', hex: '2496ED' },
+			{ nombre: 'Nginx', logo: 'nginx', hex: '009639' },
+		],
+	},
+	{
+		tipo: 'Sistemas',
+		tecs: [
+			{ nombre: 'Linux', logo: 'linux', hex: 'FCC624' },
+			{ nombre: 'Ubuntu Server', logo: 'ubuntu', hex: 'E95420' },
+		],
+	},
+];
+
+// Contraste del color de marca con cada fondo. El logo es decorativo (el nombre va al
+// lado), así que solo se cambia cuando casi desaparece: por debajo de 2:1 toma el color
+// del texto en ese tema.
+const luminancia = (hex: string) => {
+	const [r, g, b] = [0, 2, 4].map((i) => {
+		const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+		return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+	});
+	return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const contraste = (a: number, b: number) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+const fondoClaro = luminancia('FAFAF8');
+const fondoOscuro = luminancia('0B0B0B');
+
+const estilo = (t: Tec) => {
+	let s = `--src: url(/logos/${t.logo}.svg);`;
+	if (!t.hex) return s;
+	const l = luminancia(t.hex);
+	s += `--marca-claro: ${contraste(l, fondoClaro) >= 2 ? `#${t.hex}` : 'var(--text)'};`;
+	s += `--marca-oscuro: ${contraste(l, fondoOscuro) >= 2 ? `#${t.hex}` : 'var(--text)'};`;
+	return s;
+};
+---
+
+<dl class="stack">
+	{
+		grupos.map((g) => (
+			<div class="row">
+				<dt class="mono">{g.tipo}</dt>
+				<dd>
+					{(g.lineas ?? [{ tecs: g.tecs ?? [] }]).map((l) => (
+						<div class="linea">
+							<span class="tecs">
+								{l.tecs.map((t) => (
+									<span class="tec">
+										{t.logo && <span class="logo" style={estilo(t)} aria-hidden="true" />}
+										{t.nombre}
+									</span>
+								))}
+							</span>
+						</div>
+					))}
+				</dd>
+			</div>
+		))
+	}
+</dl>
+
+<style>
+	.stack {
+		display: grid;
+		gap: var(--s-3);
+		margin: 0;
+	}
+
+	/* Tipo en mono encima y cada fila en una línea, alineadas con el resto de secciones. */
+	.row {
+		display: grid;
+		gap: 4px;
+	}
+
+	dt {
+		font-size: 12px;
+		line-height: 1.7;
+		color: var(--muted);
+	}
+
+	dd {
+		margin: 0;
+		display: grid;
+		gap: 4px;
+		color: var(--body);
+	}
+
+	.tecs {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px var(--s-3);
+	}
+
+
+	.tec {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		white-space: nowrap;
+	}
+
+	/* Logo con su color de marca, ajustado por tema. */
+	.logo {
+		width: 14px;
+		height: 14px;
+		flex: none;
+		background: var(--marca-claro, var(--muted));
+		-webkit-mask: var(--src) center / contain no-repeat;
+		mask: var(--src) center / contain no-repeat;
+	}
+
+	:global(:root[data-theme='dark']) .logo {
+		background: var(--marca-oscuro, var(--muted));
+	}
+
+	@media (prefers-color-scheme: dark) {
+		:global(:root:not([data-theme])) .logo {
+			background: var(--marca-oscuro, var(--muted));
+		}
+	}
+
+	/* En el móvil las filas largas bajan de línea; con menos hueco se leen como grupo. */
+	@media (max-width: 640px) {
+		.tecs {
+			column-gap: var(--s-2);
+		}
+	}
+</style>

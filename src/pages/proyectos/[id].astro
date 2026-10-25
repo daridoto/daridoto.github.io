@@ -1,0 +1,198 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Section from '../../components/Section.astro';
+import Chip from '../../components/Chip.astro';
+import LogoCountercheck from '../../components/LogoCountercheck.astro';
+
+// Logo de marca por proyecto, mostrado encima del título.
+const logos = { 'operaciones-bancarias': LogoCountercheck };
+
+export async function getStaticPaths() {
+	const proyectos = await getCollection('proyectos', (p) => p.data.pagina);
+	return proyectos.map((proyecto) => ({ params: { id: proyecto.id }, props: { proyecto } }));
+}
+
+const { proyecto } = Astro.props;
+const { Content } = await render(proyecto);
+const Logo = logos[proyecto.id as keyof typeof logos];
+---
+
+<Base title={`${proyecto.data.marca ?? proyecto.data.titulo} · Darío Ceballos`} description={proyecto.data.resumen}>
+	<div class="wrap page">
+		<Section>
+			<p class="back mono"><a href="/">← Portada</a></p>
+			{Logo && <div class="logo"><Logo palabra={false} /></div>}
+			<h1 class="title strong">{proyecto.data.marca ?? proyecto.data.titulo}</h1>
+			{proyecto.data.marca && <p class="kind">{proyecto.data.titulo}</p>}
+			<p class="summary">{proyecto.data.resumen}</p>
+			<p class="stack">
+				{proyecto.data.stack.map((s) => <Chip>{s}</Chip>)}
+			</p>
+			{
+				proyecto.data.repo && (
+					<p class="repo">
+						<a href={proyecto.data.repo}>Código en GitHub →</a>
+					</p>
+				)
+			}
+		</Section>
+
+		<article class="prose">
+			<Content />
+		</article>
+	</div>
+</Base>
+
+<style>
+	.page {
+		padding-top: var(--s-5);
+	}
+
+	.back {
+		font-size: 12px;
+		margin-bottom: var(--s-3);
+	}
+
+	.back a {
+		color: var(--muted);
+		text-decoration: none;
+	}
+
+	.back a:hover {
+		color: var(--accent);
+	}
+
+	.title {
+		font-size: clamp(26px, 5vw, 32px);
+		font-weight: 500;
+		line-height: 1.2;
+		letter-spacing: -0.01em;
+	}
+
+	/* Bajo la marca, qué es el proyecto, en gris. */
+	.kind {
+		margin-top: var(--s-1);
+		color: var(--muted);
+	}
+
+	.summary {
+		margin-top: var(--s-2);
+	}
+
+	.stack {
+		margin-top: var(--s-2);
+		margin-left: -2px;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px 0;
+	}
+
+	.repo {
+		margin-top: var(--s-2);
+	}
+
+	/* Logo de marca entre el enlace de vuelta y el título. */
+	.logo {
+		width: 96px;
+		margin-bottom: var(--s-2);
+	}
+
+	/* Los títulos del Markdown se colocan en el margen, como las etiquetas de la portada. */
+	.prose {
+		position: relative;
+		margin-top: var(--s-6);
+		padding-left: calc(var(--label) + var(--gutter));
+	}
+
+	.prose > :global(*) {
+		max-width: var(--measure);
+	}
+
+	.prose :global(h2) {
+		position: absolute;
+		left: 0;
+		width: var(--label);
+		margin-top: var(--s-6);
+		padding-top: 3px;
+		font-family: var(--font-mono);
+		font-size: 12px;
+		font-weight: 400;
+		line-height: 1.7;
+		color: var(--muted);
+	}
+
+	.prose :global(h2:first-child) {
+		margin-top: 0;
+	}
+
+	.prose :global(h2 + *) {
+		margin-top: var(--s-6);
+	}
+
+	.prose :global(h2:first-child + *) {
+		margin-top: 0;
+	}
+
+	.prose :global(p + p),
+	.prose :global(p + ul),
+	.prose :global(ul + p) {
+		margin-top: var(--s-2);
+	}
+
+	.prose :global(strong) {
+		color: var(--text);
+		font-weight: 500;
+	}
+
+	.prose :global(ul) {
+		padding-left: 1.1em;
+		display: grid;
+		gap: var(--s-1);
+	}
+
+	/* Las capturas, alineadas con la columna de texto. */
+	.prose > :global(p:has(> img)) {
+		margin-top: var(--s-3);
+	}
+
+	.prose > :global(video) {
+		margin-top: var(--s-3);
+	}
+
+	.prose :global(img),
+	.prose :global(video) {
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+
+	.prose :global(li::marker) {
+		color: var(--muted);
+	}
+
+	.prose :global(code) {
+		font-family: var(--font-mono);
+		font-size: 0.85em;
+		padding: 1px 5px;
+		border-radius: 4px;
+		background: var(--chip);
+		color: var(--text);
+	}
+
+	@media (max-width: 640px) {
+		.prose {
+			padding-left: 0;
+		}
+
+		.prose :global(h2) {
+			position: static;
+			width: auto;
+			margin-bottom: var(--s-2);
+		}
+
+		.prose :global(h2 + *) {
+			margin-top: 0;
+		}
+	}
+</style>

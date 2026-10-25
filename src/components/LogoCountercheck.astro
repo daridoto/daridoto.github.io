@@ -1,0 +1,88 @@
+---
+// Emblema de Countercheck: un ojo que vigila las operaciones, hecho de dos párpados iguales
+// girados 180° que se cruzan alrededor del iris; en el iris, «CH» hace de pupila. Paleta
+// propia en verde banca.
+interface Props {
+	// 'auto' sigue al tema de la web; 'claro' y 'oscuro' fijan el fondo para el que se pinta.
+	fondo?: 'auto' | 'claro' | 'oscuro';
+	// Sin la palabra, solo el ojo: el lienzo se recorta a la altura del símbolo.
+	palabra?: boolean;
+}
+
+const { fondo = 'auto', palabra = true } = Astro.props;
+// Identificadores propios por versión, para que cada logo use su propio filtro y máscara.
+const id = `countercheck-${fondo}`;
+
+// Ojo en una rejilla de 240 × 160 centrada en (120, 80).
+const almendra =
+	'M18 80 C58 30 88 20 120 20 C152 20 182 30 222 80 C182 130 152 140 120 140 C88 140 58 130 18 80 Z';
+const iris = 'M158 80 A38 38 0 1 0 82 80 A38 38 0 1 0 158 80 Z';
+// Cortes que separan los dos párpados: cada uno abraza el iris un cuarto de vuelta antes de
+// salir hacia el borde, así cada párpado se estira por dentro del otro como un remolino.
+// El segundo es el primero girado 180° alrededor del centro.
+const cortes = ['M74 103 A49 49 0 0 1 101 35 L99 12', 'M166 57 A49 49 0 0 1 139 125 L141 148'];
+---
+
+<svg class:list={['emblema', fondo]} viewBox={palabra ? '0 0 240 196' : '0 0 240 160'} role="img" aria-label="Logo de Countercheck">
+	<defs>
+		<!-- Redondea todas las esquinas: difumina la forma y la vuelve a cortar por umbral. -->
+		<filter id={`${id}-redondo`} x="-5%" y="-5%" width="110%" height="110%">
+			<feGaussianBlur in="SourceGraphic" stdDeviation="3.2" result="difuso" />
+			<feComponentTransfer in="difuso">
+				<feFuncA type="linear" slope="14" intercept="-6.5" />
+			</feComponentTransfer>
+		</filter>
+		<mask id={`${id}-parpados`}>
+			<rect width="240" height="160" fill="white" />
+			{cortes.map((d) => <path d={d} fill="none" stroke="black" stroke-width="9" stroke-linecap="round" />)}
+		</mask>
+	</defs>
+	<g filter={`url(#${id}-redondo)`}>
+		<g mask={`url(#${id}-parpados)`}>
+			<path class="tinta" fill-rule="evenodd" d={`${almendra} ${iris}`} />
+		</g>
+	</g>
+	<text class="tinta ch" x="120" y="92" text-anchor="middle">CH</text>
+	{palabra && <text class="tinta palabra" x="10" y="190" textLength="220" lengthAdjust="spacingAndGlyphs">COUNTERCHECK</text>}
+</svg>
+
+<style>
+	.emblema {
+		--tinta: #12463c;
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+
+	/* Versión para fondo oscuro: el mismo verde, aclarado para que tenga contraste. */
+	.emblema.oscuro {
+		--tinta: #8fd1bc;
+	}
+
+	:global(:root[data-theme='dark']) .emblema.auto {
+		--tinta: #8fd1bc;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		:global(:root:not([data-theme])) .emblema.auto {
+			--tinta: #8fd1bc;
+		}
+	}
+
+	.tinta {
+		fill: var(--tinta);
+	}
+
+	.ch {
+		font-family: var(--font-sans);
+		font-weight: 800;
+		font-size: 33px;
+		letter-spacing: -1.5px;
+	}
+
+	.palabra {
+		font-family: var(--font-sans);
+		font-weight: 800;
+		font-size: 26px;
+	}
+</style>

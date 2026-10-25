@@ -1,0 +1,158 @@
+/* Tokens: cada color se define una vez por tema. */
+:root {
+	--bg: #fafaf8;
+	--text: #1c1c1a;
+	--body: #5f5e5a;
+	--muted: #706f6a;
+	--chip: #eeede8;
+	--line: #e4e3de;
+	--accent: #9a5a06;
+	--ok: #3b6d11;
+
+	/* Escala de espacios: solo se usan estas medidas. */
+	--s-1: 8px;
+	--s-2: 16px;
+	--s-3: 24px;
+	--s-4: 32px;
+	--s-5: 48px;
+	--s-6: 64px;
+	--s-7: 96px;
+
+	--label: 128px;
+	--gutter: var(--s-3);
+	--measure: 55ch;
+	/* Margen derecho para figuras (logos de proyecto); la columna de texto no cambia. */
+	--aside: 176px;
+	--page: 984px;
+
+	--ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+	color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+	--bg: #0b0b0b;
+	--text: #ededea;
+	--body: #a3a29d;
+	--muted: #8a8984;
+	--chip: #1d1d1c;
+	--line: #262624;
+	--accent: #e6a54a;
+	--ok: #97c459;
+	color-scheme: dark;
+}
+
+/* Sin JavaScript, se respeta la preferencia del sistema. */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme]) {
+		--bg: #0b0b0b;
+		--text: #ededea;
+		--body: #a3a29d;
+		--muted: #8a8984;
+		--chip: #1d1d1c;
+		--line: #262624;
+		--accent: #e6a54a;
+		--ok: #97c459;
+		color-scheme: dark;
+	}
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	-webkit-text-size-adjust: 100%;
+	scroll-padding-top: 80px;
+}
+
+body {
+	margin: 0;
+	background: var(--bg);
+	color: var(--body);
+	font-family: var(--font-sans);
+	font-size: 16px;
+	line-height: 1.7;
+	-webkit-font-smoothing: antialiased;
+	transition: background-color 200ms ease, color 200ms ease;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol {
+	margin: 0;
+}
+
+a {
+	color: var(--accent);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
+	text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+	transition: text-decoration-color 150ms ease;
+}
+
+a:hover {
+	text-decoration-color: var(--accent);
+}
+
+:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 3px;
+	border-radius: 4px;
+}
+
+.strong {
+	color: var(--text);
+}
+
+.mono {
+	font-family: var(--font-mono);
+}
+
+/* Los tooltips ocultos no deben ensanchar la página en el móvil. */
+main {
+	overflow-x: clip;
+}
+
+.wrap {
+	max-width: var(--page);
+	margin: 0 auto;
+	padding: 0 var(--s-3);
+}
+
+/* Sedgwick dibuja la «í» minúscula sin tilde; la mayúscula sí la lleva. */
+.i-tilde {
+	text-transform: uppercase;
+}
+
+/* Aparición al hacer scroll: fundido y subida corta, igual que la portada. Solo con
+   JavaScript, para que sin él nada se quede oculto. */
+.js .aparece {
+	opacity: 0;
+	transform: translateY(10px);
+	transition:
+		opacity 1700ms var(--ease-out),
+		transform 1700ms var(--ease-out);
+}
+
+.js .aparece.visto {
+	opacity: 1;
+	transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 1ms !important;
+		animation-delay: 0ms !important;
+		transition-duration: 1ms !important;
+	}
+}

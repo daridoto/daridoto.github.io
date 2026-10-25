@@ -1,0 +1,38 @@
+---
+// Título de capítulo: agrupa varias secciones (Proyectos, Stack). Centrado entre dos líneas
+// finas que cruzan la página; misma voz mono que las etiquetas del margen, pero más grande.
+interface Props {
+	titulo: string;
+	id?: string;
+}
+
+const { titulo, id } = Astro.props;
+---
+
+<div class="capitulo aparece" id={id}>
+	<span class="linea" aria-hidden="true"></span>
+	<h2 class="mono">{titulo}</h2>
+	<span class="linea" aria-hidden="true"></span>
+</div>
+
+<style>
+	.capitulo {
+		display: flex;
+		align-items: center;
+		gap: var(--s-3);
+	}
+
+	.linea {
+		flex: 1;
+		height: 1px;
+		background: var(--line);
+	}
+
+	h2 {
+		font-size: 13px;
+		font-weight: 400;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--text);
+	}
+</style>

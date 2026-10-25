@@ -1,0 +1,117 @@
+---
+// Emblema de Testify: cabeza de pastor alemán vectorizada con potrace a partir de una foto
+// de Pexels (recorte de 860 × 990), en cuatro capas acumuladas que se pintan de claro a
+// oscuro, sobre la cuña y la palabra. Paleta propia (azul marino policial), no la de la web.
+import k9 from '../assets/k9.json';
+
+interface Props {
+	// 'auto' sigue al tema de la web; 'claro' y 'oscuro' fijan el fondo para el que se pinta.
+	fondo?: 'auto' | 'claro' | 'oscuro';
+}
+
+const { fondo = 'auto' } = Astro.props;
+// Identificadores propios por versión: si dos logos comparten id, el navegador usa el
+// filtro del primero para ambos y el borde sale del color equivocado.
+const id = `testify-${fondo}`;
+
+// Base del perro paralela al borde superior de la cuña, con 60 de hueco (40 de aire más
+// el borde). Baja hasta el final del recorte para no cortar la boca.
+const busto = 'M120 0 H880 V480 C880 670 830 800 760 875 L260 855 C190 800 120 680 120 480 Z';
+const linea = 'M0 905 L1000 945 L0 945 Z';
+---
+
+<svg class:list={['emblema', fondo]} viewBox="-20 -20 1040 1175" role="img" aria-label="Logo de Testify">
+	<defs>
+		<!-- Borde redondo: la silueta se difumina y se corta por umbral, así las esquinas salen
+		     redondeadas en lugar de en ángulo. -->
+		<filter id={`${id}-borde`} x="-5%" y="-5%" width="110%" height="110%">
+			<feGaussianBlur in="SourceAlpha" stdDeviation="7" result="difuso" />
+			<feComponentTransfer in="difuso" result="grueso">
+				<feFuncA type="linear" slope="30" intercept="-0.9" />
+			</feComponentTransfer>
+			<feFlood class="tinta-borde" result="color" />
+			<feComposite in="color" in2="grueso" operator="in" result="contorno" />
+			<feMerge>
+				<feMergeNode in="contorno" />
+				<feMergeNode in="SourceGraphic" />
+			</feMerge>
+		</filter>
+		<clipPath id={`${id}-busto`}>
+			<path d={busto} />
+		</clipPath>
+	</defs>
+	<g filter={`url(#${id}-borde)`}>
+		<g clip-path={`url(#${id}-busto)`}>
+			<g transform="translate(120 0) scale(0.884)">
+				<path class="brillo" d={k9.brillo} />
+				<path class="pelaje" d={k9.pelaje} />
+				<path class="mascara" d={k9.mascara} />
+				<path class="negro" d={k9.negro} />
+			</g>
+		</g>
+	</g>
+	<path class="letras" d={linea} />
+	<text class="letras" x="0" y="1133" textLength="1000" lengthAdjust="spacingAndGlyphs">TESTIFY</text>
+</svg>
+
+<style>
+	.emblema {
+		--marino-claro: #c9d5e8;
+		--marino-medio: #3d5a8a;
+		--marino: #1c2f52;
+		--marino-noche: #0d1830;
+		--tinta: var(--marino);
+		--borde: #1c1c1a;
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+
+	/* Versión para fondo oscuro: la palabra en azul claro y el borde en gris claro, porque
+	   uno casi negro desaparecería sobre el fondo. */
+	.emblema.oscuro {
+		--tinta: #dfe7f3;
+		--borde: #d6d6d2;
+	}
+
+	:global(:root[data-theme='dark']) .emblema.auto {
+		--tinta: #dfe7f3;
+		--borde: #d6d6d2;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		:global(:root:not([data-theme])) .emblema.auto {
+			--tinta: #dfe7f3;
+			--borde: #d6d6d2;
+		}
+	}
+
+	/* Borde en gris casi negro sobre fondo claro, como el contorno de una pegatina. */
+	.tinta-borde {
+		flood-color: var(--borde);
+	}
+
+	.letras {
+		fill: var(--tinta);
+		font-family: var(--font-sans);
+		font-weight: 800;
+		font-size: 200px;
+	}
+
+	/* El perro va en los cuatro azules, igual en los dos temas. */
+	.brillo {
+		fill: var(--marino-claro);
+	}
+
+	.pelaje {
+		fill: var(--marino-medio);
+	}
+
+	.mascara {
+		fill: var(--marino);
+	}
+
+	.negro {
+		fill: var(--marino-noche);
+	}
+</style>
